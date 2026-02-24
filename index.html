@@ -469,8 +469,26 @@
                     <div class="stat-label">正确预测</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value" id="upAccuracy">--%</div>
-                    <div class="stat-label">看涨准确率</div>
+                    <div class="stat-value" id="accuracyValue2">--%</div>
+                    <div class="stat-label">整体准确率</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                <h3 style="font-size: 1.1rem; margin-bottom: 15px; color: #888;">按方向统计 (24H)</h3>
+                <div class="stats-grid">
+                    <div class="stat-item" style="border-left: 3px solid #00ff7f;">
+                        <div class="stat-value" style="color: #00ff7f;" id="upAccuracy">--%</div>
+                        <div class="stat-label">📈 UP 准确率<br><span id="upStats" style="font-size: 0.8rem; color: #666;">--</span></div>
+                    </div>
+                    <div class="stat-item" style="border-left: 3px solid #ff4757;">
+                        <div class="stat-value" style="color: #ff4757;" id="downAccuracy">--%</div>
+                        <div class="stat-label">📉 DOWN 准确率<br><span id="downStats" style="font-size: 0.8rem; color: #666;">--</span></div>
+                    </div>
+                    <div class="stat-item" style="border-left: 3px solid #b2bec3;">
+                        <div class="stat-value" style="color: #b2bec3;" id="neutralAccuracy">--%</div>
+                        <div class="stat-label">➡️ NEUTRAL 准确率<br><span id="neutralStats" style="font-size: 0.8rem; color: #666;">--</span></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -551,13 +569,13 @@
                 }
             },
             accuracy: {
-                total: 4,
-                correct: 0,
-                accuracy: 0.0,
+                total: 12,
+                correct: 5,
+                accuracy: 41.7,
                 by_direction: {
-                    up: { total: 0, correct: 0, accuracy: 0 },
-                    down: { total: 4, correct: 0, accuracy: 0 },
-                    neutral: { total: 0, correct: 0, accuracy: 0 }
+                    up: { total: 1, correct: 1, accuracy: 100.0 },
+                    down: { total: 7, correct: 1, accuracy: 14.3 },
+                    neutral: { total: 4, correct: 3, accuracy: 75.0 }
                 }
             },
             traditional: {
@@ -629,8 +647,23 @@
             document.getElementById('totalPredictions').textContent = data.accuracy.total;
             document.getElementById('correctPredictions').textContent = data.accuracy.correct;
             
+            // 三项胜率统计
             const upAcc = data.accuracy.by_direction.up.accuracy || 0;
+            const downAcc = data.accuracy.by_direction.down.accuracy || 0;
+            const neutralAcc = data.accuracy.by_direction.neutral.accuracy || 0;
+            
             document.getElementById('upAccuracy').textContent = upAcc.toFixed(1) + '%';
+            document.getElementById('downAccuracy').textContent = downAcc.toFixed(1) + '%';
+            document.getElementById('neutralAccuracy').textContent = neutralAcc.toFixed(1) + '%';
+            
+            // 显示详细统计
+            const upStats = data.accuracy.by_direction.up;
+            const downStats = data.accuracy.by_direction.down;
+            const neutralStats = data.accuracy.by_direction.neutral;
+            
+            document.getElementById('upStats').textContent = `(${upStats.correct}/${upStats.total})`;
+            document.getElementById('downStats').textContent = `(${downStats.correct}/${downStats.total})`;
+            document.getElementById('neutralStats').textContent = `(${neutralStats.correct}/${neutralStats.total})`;
             
             // 传统市场
             document.getElementById('sp500Price').textContent = data.traditional.SP500.price.toLocaleString();
