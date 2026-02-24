@@ -109,8 +109,8 @@
     </div>
     
     <script>
-        // API基础URL - 部署时修改为实际API地址
-        const API_BASE = window.location.origin;
+        // API基础URL - 使用CoinGecko公共API
+        const COINGECKO_API = 'https://api.coingecko.com/api/v3';
         
         // 格式化价格
         function formatPrice(price) {
@@ -123,37 +123,47 @@
             return `${sign}${change.toFixed(2)}%`;
         }
         
-        // 获取实时价格
+        // 获取实时价格 - 直接使用CoinGecko API
         async function fetchPrices() {
             try {
                 document.getElementById('loadingIndicator').innerHTML = '<span class="loading"></span>';
                 
-                const response = await fetch(`${API_BASE}/api/prices`);
+                const response = await fetch(`${COINGECKO_API}/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true`);
+                
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+                
                 const data = await response.json();
                 
-                if (data.status === 'ok') {
-                    // 更新BTC
-                    const btc = data.prices.BTC;
-                    document.getElementById('btcPrice').textContent = formatPrice(btc.price);
-                    const btcChangeEl = document.getElementById('btcChange');
-                    btcChangeEl.textContent = formatChange(btc.change_24h);
-                    btcChangeEl.className = 'price-change ' + (btc.change_24h >= 0 ? 'up' : 'down');
-                    
-                    // 更新ETH
-                    const eth = data.prices.ETH;
-                    document.getElementById('ethPrice').textContent = formatPrice(eth.price);
-                    const ethChangeEl = document.getElementById('ethChange');
-                    ethChangeEl.textContent = formatChange(eth.change_24h);
-                    ethChangeEl.className = 'price-change ' + (eth.change_24h >= 0 ? 'up' : 'down');
-                    
-                    // 更新时间
-                    document.getElementById('lastUpdate').textContent = new Date().toLocaleString('zh-CN');
-                }
+                // 更新BTC
+                const btcPrice = data.bitcoin.usd;
+                const btcChange = data.bitcoin.usd_24h_change;
+                document.getElementById('btcPrice').textContent = formatPrice(btcPrice);
+                const btcChangeEl = document.getElementById('btcChange');
+                btcChangeEl.textContent = formatChange(btcChange);
+                btcChangeEl.className = 'price-change ' + (btcChange >= 0 ? 'up' : 'down');
+                
+                // 更新ETH
+                const ethPrice = data.ethereum.usd;
+                const ethChange = data.ethereum.usd_24h_change;
+                document.getElementById('ethPrice').textContent = formatPrice(ethPrice);
+                const ethChangeEl = document.getElementById('ethChange');
+                ethChangeEl.textContent = formatChange(ethChange);
+                ethChangeEl.className = 'price-change ' + (ethChange >= 0 ? 'up' : 'down');
+                
+                // 更新时间
+                document.getElementById('lastUpdate').textContent = new Date().toLocaleString('zh-CN');
+                document.getElementById('loadingIndicator').innerHTML = '';
+                
             } catch (error) {
                 console.error('获取价格失败:', error);
                 document.getElementById('loadingIndicator').textContent = ' (更新失败)';
-            } finally {
-                document.getElementById('loadingIndicator').innerHTML = '';
+                
+                // 显示错误但不覆盖已有数据
+                setTimeout(() => {
+                    document.getElementById('loadingIndicator').innerHTML = '';
+                }, 3000);
             }
         }
         
